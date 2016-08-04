@@ -40,7 +40,7 @@
                     console.log(layer);
                     var query = new Query();
                     query.outFields = ["*"];
-                    query.text = "ATCT";
+                    query.text = "ATCT - Inland tk junct. to Anchorage tk";
                     featureLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW, function(response){
                         console.log(response);
                     }, function(error){
@@ -74,7 +74,7 @@
 
                 var fieldsSelectionSymbol =
                                 new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
-                                        new Color([255, 0, 0]), 2);
+                                        new Color([128, 255, 0]), 3);
                 featureLayer.setSelectionSymbol(fieldsSelectionSymbol);
                 map.addLayer(featureLayer);
 
