@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>FeatureLayer On Demand</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <style>
+        html, body, #mapDiv {
+            padding:0;
+            margin:0;
+            height:100%;
+        }
+    </style>
+    <script src="https://js.arcgis.com/3.17/"></script>
+    <script>
+        var map;
+        require([
+            "esri/map", "esri/InfoTemplate", "esri/layers/FeatureLayer",
+            "dojo/parser","esri/tasks/query", "dojo/domReady!"
+        ], function(
+                Map, InfoTemplate, FeatureLayer,
+                parser, Query
+        ) {
+            parser.parse();
+            map = new Map("mapDiv", {
+                basemap: "national-geographic",
+                center: [173, -41],
+                zoom: 12
+            });
+
+            map.on("load", initOperationalLayer);
+/*
+            map.on('onZoomEnd', function() {
+                var maxOffset = calcOffset();
+                featureLayer.setMaxAllowableOffset(maxOffset);
+            });
+
+            function calcOffset() {
+                return (map.extent.getWidth() / map.width);
+            }
+*/
+            function initOperationalLayer() {
+                var infoTemplate = new InfoTemplate("${DESCRIPTION}", "Population (2000):  ${URL}");
+                var featureLayer = new FeatureLayer("http://maps.doc.govt.nz/arcgis/rest/services/DTO/WalkingAndTramping/MapServer/1",{
+                    mode: FeatureLayer.MODE_ONDEMAND,
+                    //maxAllowableOffset: calcOffset(),
+                    outFields: ["*"],
+                    infoTemplate: infoTemplate
+                });
+
+                map.addLayer(featureLayer);
+
+
+                map.infoWindow.resize(155, 75);
+
+
+                var query = new Query();
+                //query.outSpatialReference = new SpatialReference(4326);
+                query.outFields = ["*"];
+                query.text = "water";
+                featureLayer.queryFeatures(query, function(response) {
+                    console.log(response);
+
+                });
+
+            }
+        });
+    </script>
+</head>
+<body class="claro">
+<div id="mapDiv">
+</div>
+</body>
+</html>
