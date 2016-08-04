@@ -20,19 +20,37 @@
         var map;
         require([
             "esri/map", "esri/InfoTemplate", "esri/layers/FeatureLayer",
-            "dojo/parser","esri/tasks/query", "dojo/domReady!"
+            "dojo/parser","esri/tasks/query","esri/layers/GraphicsLayer", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/graphic","esri/Color", "dojo/on", "dojo/domReady!"
         ], function(
                 Map, InfoTemplate, FeatureLayer,
-                parser, Query
+                parser, Query, GraphicsLayer, SimpleLineSymbol, SimpleFillSymbol, Graphic, Color, on
         ) {
             parser.parse();
-            map = new Map("mapDiv", {
-                basemap: "national-geographic",
+            var featureLayer;
+            var map = new Map("mapDiv", {
+                basemap: "gray",
                 center: [173, -41],
                 zoom: 12
             });
 
             map.on("load", initOperationalLayer);
+
+            map.on('layer-add-result', function(layer){
+                if(layer.layer===featureLayer){
+                    console.log(layer);
+                    var query = new Query();
+                    query.outFields = ["*"];
+                    query.text = "ATCT";
+                    featureLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW, function(response){
+                        console.log(response);
+                    }, function(error){
+                        console.log(error);
+                    });
+                }
+
+            });
+
+
 /*
             map.on('onZoomEnd', function() {
                 var maxOffset = calcOffset();
@@ -45,26 +63,20 @@
 */
             function initOperationalLayer() {
                 var infoTemplate = new InfoTemplate("${DESCRIPTION}", "Population (2000):  ${URL}");
-                var featureLayer = new FeatureLayer("http://maps.doc.govt.nz/arcgis/rest/services/DTO/WalkingAndTramping/MapServer/1",{
+                featureLayer = new FeatureLayer("http://maps.doc.govt.nz/arcgis/rest/services/DTO/WalkingAndTramping/MapServer/1",{
                     mode: FeatureLayer.MODE_ONDEMAND,
                     //maxAllowableOffset: calcOffset(),
                     outFields: ["*"],
                     infoTemplate: infoTemplate
                 });
 
-                map.addLayer(featureLayer);
-
-
                 map.infoWindow.resize(155, 75);
 
-                var query = new Query();
-                //query.outSpatialReference = new SpatialReference(4326);
-                query.outFields = ["*"];
-                query.text = "water";
-                featureLayer.queryFeatures(query, function(response) {
-                    console.log(response);
-
-                });
+                var fieldsSelectionSymbol =
+                                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                                        new Color([255, 0, 0]), 2);
+                featureLayer.setSelectionSymbol(fieldsSelectionSymbol);
+                map.addLayer(featureLayer);
 
             }
         });
@@ -72,6 +84,7 @@
 </head>
 <body class="claro">
 <div id="mapDiv">
+    <div id="mapDiv_graphics"></div>
 </div>
 </body>
 </html>
